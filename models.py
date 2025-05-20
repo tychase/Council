@@ -2,7 +2,8 @@ from enum import Enum
 from typing import Dict, Any, Optional, List
 from pydantic import BaseModel, Field
 import json
-from sqlalchemy import Column, String, Text, ForeignKey, DateTime, JSON
+import secrets
+from sqlalchemy import Column, String, Text, ForeignKey, DateTime, JSON, Boolean
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app import db
@@ -56,6 +57,36 @@ class Question(db.Model):
             "id": self.id,
             "text": self.text,
             "timestamp": self.timestamp.isoformat()
+        }
+
+class ApiKey(db.Model):
+    """SQLAlchemy model for API keys used for agent authentication."""
+    __tablename__ = 'api_keys'
+    
+    id = db.Column(db.String(36), primary_key=True)
+    key = db.Column(db.String(64), unique=True, nullable=False)
+    agent_id = db.Column(db.String(64), nullable=False)
+    agent_name = db.Column(db.String(128), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_used_at = db.Column(db.DateTime, nullable=True)
+    is_active = db.Column(db.Boolean, default=True)
+    
+    @staticmethod
+    def generate_key():
+        """Generate a secure API key."""
+        return secrets.token_urlsafe(32)
+    
+    def to_dict(self):
+        """Convert to dictionary for API responses."""
+        return {
+            "id": self.id,
+            "agent_id": self.agent_id,
+            "agent_name": self.agent_name,
+            "description": self.description,
+            "created_at": self.created_at.isoformat(),
+            "last_used_at": self.last_used_at.isoformat() if self.last_used_at else None,
+            "is_active": self.is_active
         }
 
 class Context(db.Model):

@@ -18,11 +18,13 @@ logger = logging.getLogger("flask_app")
 # Import models
 from models import Stage, Question, Context
 
-# Import agent routes
+# Import routes
 from agents.routes import agent_routes
+from agents.api_key_routes import api_key_routes
 
 # Register blueprints
 app.register_blueprint(agent_routes)
+app.register_blueprint(api_key_routes)
 
 # Create database tables
 with app.app_context():
