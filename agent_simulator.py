@@ -16,7 +16,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Base URL for the MCP server
-BASE_URL = "http://localhost:5000"
+BASE_URL = "http://0.0.0.0:5000"
 
 # Define agents
 AGENTS = [
