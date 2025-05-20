@@ -62,9 +62,14 @@ def run_real_agents():
         db.session.add(new_context)
         db.session.commit()
         
-        # Start background task to process the question
-        # This approach doesn't block the HTTP response
-        asyncio.create_task(process_and_update_db(question_id, question_text, use_real_agents))
+        # Instead of async, we'll start a separate thread
+        import threading
+        thread = threading.Thread(
+            target=process_in_thread,
+            args=(question_id, question_text, use_real_agents)
+        )
+        thread.daemon = True
+        thread.start()
         
         return jsonify({
             "question_id": question_id,
@@ -76,8 +81,8 @@ def run_real_agents():
         logger.error(f"Error running real agents: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-async def process_and_update_db(question_id: str, question_text: str, use_real_agents: bool):
-    """Process the question with agents and update the database with results.
+def process_in_thread(question_id: str, question_text: str, use_real_agents: bool):
+    """Process the question with agents in a separate thread.
     
     Args:
         question_id: The ID of the question in the database
@@ -85,10 +90,16 @@ async def process_and_update_db(question_id: str, question_text: str, use_real_a
         use_real_agents: Whether to use real AI APIs or mock agents
     """
     try:
-        logger.info(f"Starting processing for question {question_id}")
+        logger.info(f"Starting processing for question {question_id} in thread")
+        
+        # Create a new event loop for this thread
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         
         # Process the question with agents
-        result = await process_question_with_agents(question_text, use_real_agents)
+        result = loop.run_until_complete(
+            process_question_with_agents(question_text, use_real_agents)
+        )
         
         # Update the database with the results
         from app import app
@@ -113,6 +124,9 @@ async def process_and_update_db(question_id: str, question_text: str, use_real_a
             db.session.commit()
             
             logger.info(f"Updated database with results for question {question_id}")
+        
+        # Close the loop
+        loop.close()
     
     except Exception as e:
         logger.error(f"Error processing question {question_id}: {str(e)}")
