@@ -1,0 +1,69 @@
+Here’s the full set of Replit prompts in one clean copy-paste message for you to feed in sequentially or all at once:
+
+⸻
+
+PROMPT BLOCK FOR REPLIT: Building MCP Multi-Agent Hub
+
+⸻
+
+1. Project Overview and Planning
+
+I’m building a FastAPI-based MCP server that allows multiple AI agents (GPT, Claude, Grok, etc.) to answer a question, critique each other’s answers, conduct research, and form conclusions. Help me define an overview, architecture, key features, and potential edge cases for this.
+
+⸻
+
+2. Define Functional Requirements
+
+List the core features and API endpoints I’ll need for this MCP server. The server should accept a question from a user, receive responses from agents, store critiques and research, and compile a final conclusion.
+
+⸻
+
+3. Build Basic FastAPI Skeleton
+
+Create a basic FastAPI app with a /submit POST endpoint for agent input and a /context GET endpoint to return shared context. The server should store stages like ‘question’, ‘response’, ‘critique’, ‘research’, and ‘conclusion’ in memory.
+
+⸻
+
+4. Add Data Models with Pydantic
+
+Define Pydantic models for agent submissions. Each submission should include: agent_id, stage (e.g., ‘response’, ‘critique’), and a payload dictionary containing their message or data.
+
+⸻
+
+5. Add Shared Context Storage Logic
+
+Add logic so each stage updates a global shared_context dictionary, organizing responses by agent ID and stage.
+
+⸻
+
+6. Simulate Agent Submissions
+
+Create a Python script to simulate three different agents submitting responses to a question using POST requests to the FastAPI /submit endpoint. Include a sample critique and research submission for each.
+
+⸻
+
+7. Build a Simple UI (Optional)
+
+Help me create a minimal web interface in HTML/JavaScript served via FastAPI that shows the current shared MCP context from the /context endpoint and has a form to submit a new question.
+
+⸻
+
+8. Add Logging and Debug Info
+
+Add logging to each endpoint in the FastAPI app to track submissions, stage transitions, and final conclusions.
+
+⸻
+
+9. Create requirements.txt
+
+Generate a requirements.txt file for this FastAPI project using Pydantic and Uvicorn.
+
+⸻
+
+10. Plan Real Agent Integration
+
+How would I securely integrate OpenAI’s GPT, Claude from Anthropic, and Grok into this system as real agent backends that can send and receive context through my MCP server?
+
+⸻
+
+Let me know when you want the next set of prompts — like for automatic chaining, persistent storage, or visual dashboard UI.
