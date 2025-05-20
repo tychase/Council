@@ -12,7 +12,7 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[logging.StreamHandler()]
 )
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("flask_app")
 
 # Create Flask app
 app = Flask(__name__)
@@ -70,10 +70,13 @@ def submit_agent_response(question_id):
     
     # Parse submission from JSON
     submission = request.json
-    agent_id = submission.get('agent_id')
-    agent_name = submission.get('agent_name')
-    stage = submission.get('stage')
-    payload = submission.get('payload', {})
+    if submission:
+        agent_id = submission.get('agent_id')
+        agent_name = submission.get('agent_name')
+        stage = submission.get('stage')
+        payload = submission.get('payload', {})
+    else:
+        return jsonify({"error": "Invalid submission data"}), 400
     
     logger.info(f"Received {stage} from agent {agent_id} for question {question_id}")
     
