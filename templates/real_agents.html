@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real AI Agents - MCP Multi-Agent Hub</title>
+    <!-- Bootstrap CSS (Dark Theme) -->
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="/static/css/custom.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-hdd-network me-2"></i>
+                MCP Multi-Agent Hub
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/real-agents">Real AI Agents</a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    <button id="refresh-button" class="btn btn-outline-light me-2">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        <!-- Error Alert -->
+        <div id="error-alert" class="alert alert-danger alert-dismissible fade show" style="display: none;" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span id="error-message">Error message goes here</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loading-spinner" class="spinner-container" style="display: none;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Question Form & List -->
+            <div class="col-lg-4">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-robot me-2"></i>
+                            Real AI Agents
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-3">Ask a question and get answers from real AI models including:</p>
+                        <div class="d-flex mb-3">
+                            <span class="badge bg-info me-2 p-2">GPT</span>
+                            <span class="badge bg-success me-2 p-2">Claude</span>
+                            <span class="badge bg-warning p-2">Grok</span>
+                        </div>
+                        <form id="real-agent-form">
+                            <div class="mb-3">
+                                <label for="real-question-input" class="form-label">Enter your question:</label>
+                                <textarea id="real-question-input" class="form-control question-input" rows="3" required placeholder="What would you like to ask the real AI agents?"></textarea>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" value="" id="use-mock-agents">
+                                <label class="form-check-label" for="use-mock-agents">
+                                    Use mock agents (no API calls)
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-send me-2"></i>
+                                Submit to Real Agents
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-list-ul me-2"></i>
+                            Real Agent Questions
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="real-questions-list">
+                            <div class="alert alert-info">
+                                No questions yet. Submit a question to get started.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Context Display -->
+            <div class="col-lg-8">
+                <div id="real-context-container">
+                    <div class="text-center py-5">
+                        <h3 class="mb-4">Real AI Agent Hub</h3>
+                        <i class="bi bi-robot display-1 text-primary mb-4"></i>
+                        <p class="lead">
+                            Ask a question to see responses from GPT, Claude, and Grok.
+                        </p>
+                        <div class="row mt-5">
+                            <div class="col-md-4">
+                                <div class="card text-center mb-3">
+                                    <div class="card-body">
+                                        <i class="bi bi-chat-dots text-info display-4"></i>
+                                        <h5 class="mt-3">Real AI Responses</h5>
+                                        <p>Get answers from actual AI models</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card text-center mb-3">
+                                    <div class="card-body">
+                                        <i class="bi bi-clipboard-check text-warning display-4"></i>
+                                        <h5 class="mt-3">Cross-Model Critiques</h5>
+                                        <p>Models review each other's answers</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card text-center mb-3">
+                                    <div class="card-body">
+                                        <i class="bi bi-lightbulb text-success display-4"></i>
+                                        <h5 class="mt-3">AI Consensus</h5>
+                                        <p>See where different models agree or disagree</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress Indicator (initially hidden) -->
+                    <div id="processing-progress" class="mt-4" style="display: none;">
+                        <h4 class="mb-3">Processing your question with real AI agents</h4>
+                        <div class="progress" style="height: 30px;">
+                            <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <span>Waiting for responses</span>
+                            <span>Gathering critiques</span>
+                            <span>Research</span>
+                            <span>Conclusions</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>MCP Multi-Agent Hub</h5>
+                    <p>
+                        A system that allows multiple AI agents to collaborate on questions, 
+                        providing diverse perspectives and insights.
+                    </p>
+                </div>
+                <div class="col-md-3">
+                    <h5>Models</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-light">GPT (OpenAI)</a></li>
+                        <li><a href="#" class="text-light">Claude (Anthropic)</a></li>
+                        <li><a href="#" class="text-light">Grok (via Perplexity)</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5>Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="/" class="text-light">Home</a></li>
+                        <li><a href="/real-agents" class="text-light">Real AI Agents</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr>
+            <div class="text-center">
+                <p>&copy; 2025 MCP Multi-Agent Hub</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Real Agents JavaScript -->
+    <script src="/static/js/real_agents.js"></script>
+</body>
+</html>

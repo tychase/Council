@@ -18,6 +18,12 @@ logger = logging.getLogger("flask_app")
 # Import models
 from models import Stage, Question, Context
 
+# Import agent routes
+from agents.routes import agent_routes
+
+# Register blueprints
+app.register_blueprint(agent_routes)
+
 # Create database tables
 with app.app_context():
     db.create_all()
@@ -28,6 +34,12 @@ def index():
     """Render the main page of the application."""
     logger.info("Rendering main page")
     return render_template("index.html")
+
+@app.route('/real-agents')
+def real_agents():
+    """Render the real agents page."""
+    logger.info("Rendering real agents page")
+    return render_template("real_agents.html")
 
 @app.route('/question', methods=['POST'])
 def create_question():

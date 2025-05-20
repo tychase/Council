@@ -43,12 +43,12 @@ class Question(db.Model):
     """SQLAlchemy model for questions."""
     __tablename__ = 'questions'
     
-    id = Column(String(36), primary_key=True)
-    text = Column(Text, nullable=False)
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    id = db.Column(db.String(36), primary_key=True)
+    text = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationship
-    context = relationship("Context", back_populates="question", uselist=False, cascade="all, delete-orphan")
+    context = db.relationship("Context", back_populates="question", uselist=False, cascade="all, delete-orphan")
     
     def to_dict(self):
         """Convert to dictionary for API responses."""
@@ -62,16 +62,16 @@ class Context(db.Model):
     """SQLAlchemy model for shared context."""
     __tablename__ = 'contexts'
     
-    id = Column(String(36), primary_key=True)
-    question_id = Column(String(36), ForeignKey('questions.id'), nullable=False)
-    question = relationship("Question", back_populates="context")
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    id = db.Column(db.String(36), primary_key=True)
+    question_id = db.Column(db.String(36), db.ForeignKey('questions.id'), nullable=False)
+    question = db.relationship("Question", back_populates="context")
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Store JSON data
-    responses = Column(JSON, default=lambda: {})
-    critiques = Column(JSON, default=lambda: {})
-    research = Column(JSON, default=lambda: {})
-    conclusions = Column(JSON, default=lambda: {})
+    responses = db.Column(db.JSON, default=dict)
+    critiques = db.Column(db.JSON, default=dict)
+    research = db.Column(db.JSON, default=dict)
+    conclusions = db.Column(db.JSON, default=dict)
     
     def to_dict(self):
         """Convert to dictionary for API responses."""
