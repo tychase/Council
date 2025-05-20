@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Dict, Any
 
 from flask import Flask, render_template, request, jsonify, redirect, url_for
+from app import app, db
 
 # Configure logging
 logging.basicConfig(
@@ -14,17 +15,13 @@ logging.basicConfig(
 )
 logger = logging.getLogger("flask_app")
 
-# Create Flask app
-app = Flask(__name__)
-app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key")
+# Import models
+from models import Stage, Question, Context
 
-# In-memory storage
-questions = {}
-shared_context = {}
-
-# Import models for type checking
-from models import Stage, Question, SharedContext
-
+# Create database tables
+with app.app_context():
+    db.create_all()
+    
 # Routes
 @app.route('/')
 def index():
@@ -37,34 +34,38 @@ def create_question():
     """Create a new question and initialize context."""
     question_text = request.form.get('question_text', '')
     question_id = str(uuid.uuid4())
-    timestamp = datetime.now().isoformat()
     
     logger.info(f"Creating new question: '{question_text}' with ID: {question_id}")
     
     # Create question object
-    questions[question_id] = {
-        "id": question_id,
-        "text": question_text,
-        "timestamp": timestamp
-    }
+    new_question = Question(
+        id=question_id,
+        text=question_text
+    )
     
     # Initialize shared context
-    shared_context[question_id] = {
-        "question_id": question_id,
-        "question_text": question_text,
-        "timestamp": timestamp,
-        "responses": {},
-        "critiques": {},
-        "research": {},
-        "conclusions": {}
-    }
+    new_context = Context(
+        id=str(uuid.uuid4()),
+        question_id=question_id,
+        responses={},
+        critiques={},
+        research={},
+        conclusions={}
+    )
+    
+    # Add to database
+    db.session.add(new_question)
+    db.session.add(new_context)
+    db.session.commit()
     
     return jsonify({"question_id": question_id, "message": "Question created successfully"})
 
 @app.route('/submit/<question_id>', methods=['POST'])
 def submit_agent_response(question_id):
     """Submit an agent's response, critique, research, or conclusion for a question."""
-    if question_id not in shared_context:
+    # Find the context in the database
+    context = Context.query.filter_by(question_id=question_id).first()
+    if not context:
         logger.error(f"Question ID {question_id} not found")
         return jsonify({"error": "Question not found"}), 404
     
@@ -80,29 +81,33 @@ def submit_agent_response(question_id):
     
     logger.info(f"Received {stage} from agent {agent_id} for question {question_id}")
     
-    # Update shared context based on submission stage
-    context = shared_context[question_id]
+    # Add agent name to payload if provided
+    if agent_name:
+        payload["agent_name"] = agent_name
     
+    # Update shared context based on submission stage
     if stage == "response":
-        # Add agent name to payload if provided
-        if agent_name:
-            payload["agent_name"] = agent_name
-        context["responses"][agent_id] = payload
+        responses = context.responses or {}
+        responses[agent_id] = payload
+        context.responses = responses
     elif stage == "critique":
-        if agent_name:
-            payload["agent_name"] = agent_name
-        context["critiques"][agent_id] = payload
+        critiques = context.critiques or {}
+        critiques[agent_id] = payload
+        context.critiques = critiques
     elif stage == "research":
-        if agent_name:
-            payload["agent_name"] = agent_name
-        context["research"][agent_id] = payload
+        research = context.research or {}
+        research[agent_id] = payload
+        context.research = research
     elif stage == "conclusion":
-        if agent_name:
-            payload["agent_name"] = agent_name
-        context["conclusions"][agent_id] = payload
+        conclusions = context.conclusions or {}
+        conclusions[agent_id] = payload
+        context.conclusions = conclusions
     else:
         logger.warning(f"Unknown stage: {stage}")
         return jsonify({"error": "Invalid stage"}), 400
+    
+    # Save changes to database
+    db.session.commit()
     
     logger.info(f"Updated context for question {question_id}, stage: {stage}")
     return jsonify({"status": "success", "message": f"{stage} recorded successfully"})
@@ -110,30 +115,32 @@ def submit_agent_response(question_id):
 @app.route('/context/<question_id>')
 def get_context(question_id):
     """Retrieve the shared context for a specific question."""
-    if question_id not in shared_context:
+    context = Context.query.filter_by(question_id=question_id).first()
+    if not context:
         logger.error(f"Question ID {question_id} not found")
         return jsonify({"error": "Question not found"}), 404
     
     logger.info(f"Retrieving context for question {question_id}")
-    return jsonify(shared_context[question_id])
+    return jsonify(context.to_dict())
 
 @app.route('/questions')
 def list_questions():
     """List all questions in the system."""
     logger.info("Listing all questions")
-    return jsonify(questions)
+    questions = Question.query.all()
+    return jsonify({q.id: q.to_dict() for q in questions})
 
 @app.route('/question/<question_id>', methods=['DELETE'])
 def delete_question(question_id):
     """Delete a question and its shared context."""
-    if question_id not in questions:
+    question = Question.query.get(question_id)
+    if not question:
         logger.error(f"Question ID {question_id} not found")
         return jsonify({"error": "Question not found"}), 404
     
     logger.info(f"Deleting question {question_id}")
-    del questions[question_id]
-    if question_id in shared_context:
-        del shared_context[question_id]
+    db.session.delete(question)
+    db.session.commit()
     
     return jsonify({"status": "success", "message": "Question deleted successfully"})
 

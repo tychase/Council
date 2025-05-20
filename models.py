@@ -1,7 +1,13 @@
 from enum import Enum
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from pydantic import BaseModel, Field
+import json
+from sqlalchemy import Column, String, Text, ForeignKey, DateTime, JSON
+from sqlalchemy.orm import relationship
+from datetime import datetime
+from app import db
 
+# Pydantic models for API validation
 class Stage(str, Enum):
     """Enum representing the different stages in the multi-agent process."""
     RESPONSE = "response"
@@ -16,14 +22,14 @@ class AgentSubmission(BaseModel):
     stage: Stage = Field(..., description="Stage of the submission")
     payload: Dict[str, Any] = Field(..., description="Content of the submission")
 
-class Question(BaseModel):
-    """Model representing a question asked by a user."""
+class QuestionModel(BaseModel):
+    """Pydantic model representing a question asked by a user."""
     id: str = Field(..., description="Unique identifier for the question")
     text: str = Field(..., description="Text of the question")
     timestamp: str = Field(..., description="ISO timestamp when the question was created")
 
-class SharedContext(BaseModel):
-    """Model representing the shared context for a question."""
+class SharedContextModel(BaseModel):
+    """Pydantic model representing the shared context for a question."""
     question_id: str = Field(..., description="ID of the question")
     question_text: str = Field(..., description="Text of the question")
     timestamp: str = Field(..., description="ISO timestamp when the context was created")
@@ -31,3 +37,50 @@ class SharedContext(BaseModel):
     critiques: Dict[str, Dict[str, Any]] = Field(default_factory=dict, description="Agent critiques")
     research: Dict[str, Dict[str, Any]] = Field(default_factory=dict, description="Agent research")
     conclusions: Dict[str, Dict[str, Any]] = Field(default_factory=dict, description="Agent conclusions")
+
+# SQLAlchemy models for database
+class Question(db.Model):
+    """SQLAlchemy model for questions."""
+    __tablename__ = 'questions'
+    
+    id = Column(String(36), primary_key=True)
+    text = Column(Text, nullable=False)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationship
+    context = relationship("Context", back_populates="question", uselist=False, cascade="all, delete-orphan")
+    
+    def to_dict(self):
+        """Convert to dictionary for API responses."""
+        return {
+            "id": self.id,
+            "text": self.text,
+            "timestamp": self.timestamp.isoformat()
+        }
+
+class Context(db.Model):
+    """SQLAlchemy model for shared context."""
+    __tablename__ = 'contexts'
+    
+    id = Column(String(36), primary_key=True)
+    question_id = Column(String(36), ForeignKey('questions.id'), nullable=False)
+    question = relationship("Question", back_populates="context")
+    timestamp = Column(DateTime, default=datetime.utcnow)
+    
+    # Store JSON data
+    responses = Column(JSON, default=lambda: {})
+    critiques = Column(JSON, default=lambda: {})
+    research = Column(JSON, default=lambda: {})
+    conclusions = Column(JSON, default=lambda: {})
+    
+    def to_dict(self):
+        """Convert to dictionary for API responses."""
+        return {
+            "question_id": self.question_id,
+            "question_text": self.question.text,
+            "timestamp": self.timestamp.isoformat(),
+            "responses": {} if self.responses is None else self.responses,
+            "critiques": {} if self.critiques is None else self.critiques,
+            "research": {} if self.research is None else self.research,
+            "conclusions": {} if self.conclusions is None else self.conclusions
+        }
