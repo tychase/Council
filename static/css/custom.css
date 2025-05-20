@@ -1,0 +1,121 @@
+/* Custom CSS for MCP Multi-Agent Hub */
+
+/* General container spacing */
+.container {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+/* Card styling */
+.card {
+    margin-bottom: 1.5rem;
+    border-radius: 0.5rem;
+}
+
+/* Agent response card styling */
+.agent-card {
+    border-left: 5px solid var(--bs-primary);
+    transition: transform 0.2s ease;
+}
+
+.agent-card:hover {
+    transform: translateY(-5px);
+}
+
+.agent-gpt {
+    border-left-color: var(--bs-info);
+}
+
+.agent-claude {
+    border-left-color: var(--bs-success);
+}
+
+.agent-grok {
+    border-left-color: var(--bs-warning);
+}
+
+/* Stage badges */
+.badge-response {
+    background-color: var(--bs-info);
+}
+
+.badge-critique {
+    background-color: var(--bs-warning);
+}
+
+.badge-research {
+    background-color: var(--bs-success);
+}
+
+.badge-conclusion {
+    background-color: var(--bs-danger);
+}
+
+/* Question input styling */
+.question-input {
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
+
+/* Loading spinner */
+.spinner-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+}
+
+/* Agent avatar */
+.agent-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    color: white;
+    font-weight: bold;
+}
+
+/* Animation for new content */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+/* Timeline display */
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: var(--bs-secondary);
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -34px;
+    top: 10px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--bs-primary);
+}
